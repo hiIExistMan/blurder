@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>blurder</title>
+</head>
+<body>
+    <style>
+        body {
+            background-color: #1C1C1C;
+        }
+    </style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.1.9/p5.js"></script>
+<script>;
+    let dead = false;
+    let pipes = [];
+    let grav = 0.7;
+    let jForce = 20;
+    let bSize = 30;
+    let pThckness = 50;
+    let pSpeed = 2;
+    let friction = 0.95;
+    let bird;
+    let frames = 150;
+    
+    class Bird {
+        constructor(){
+            this.x = 50;
+            this.y = height/2;
+            this.yvel = 0;
+        }
+        
+        show(){
+            circle(this.x, this.y, bSize);
+        }
+        
+        gravity(){;
+            this.yvel+=grav;
+        }
+        
+        flap(){
+            this.yvel-=jForce;
+        }
+        
+        update(){;
+            this.gravity();
+            this.y+=this.yvel;
+            this.yvel*=0.95;
+            if(this.y >= height || this.y <= 0){
+              this.y = constrain(this.y, 0, height);
+              this.yvel = 0;
+            }
+        }
+    }
+    
+    class pipe{;
+        constructor(){
+            this.x = width;
+            let spacing = random(height/6, height/2);
+            let cy = random(spacing, height-spacing);
+            this.top = cy - spacing/2;
+            this.bottom =  height - (cy + spacing/2);
+        }
+        
+        update(){
+            this.x-=pSpeed;
+        }
+        
+        show(){
+            rect(this.x, 0, pThckness, this.top);
+            rect(this.x, height, pThckness, -this.bottom);
+        }
+    }
+    
+    function hit(){
+        let touched = false;
+        let x = bird.x;
+        let y = bird.y;
+        if(bird.y >= height){
+            dead = true;
+            return;
+        }
+        for(let p of pipes){
+            if((x<(p.x+pThckness) && x>p.x && y<p.top) || (x<(p.x+pThckness) && x>p.x && y>(height-p.bottom))){
+                dead = true;
+                return;
+            }
+        }
+    }
+    
+    function keyPressed(){
+        if(keyCode === 32){
+          if(!dead){
+          // console.log(keyCode);
+            bird.flap();
+          } else if(bird.y >= height) {
+              dead = false;
+              bird = new Bird();
+              pipes = [];
+              pipes.push(new pipe());
+              frames = 150;
+              pSpeed = 2;
+              loop();
+          }
+        }
+    }
+    
+    function mousePressed(){;
+        if(!dead){;
+        // console.log(keyCode);
+            bird.flap();
+        } else if(bird.y >= height) {
+            dead = false;
+            bird = new Bird();
+            pipes = [];
+            pipes.push(new pipe());
+            frames = 150;
+            pSpeed = 2;
+            loop();
+        }
+    }
+
+    function setup(){
+        let c = createCanvas(windowWidth+1, windowHeight);
+        c.position(0, 0);
+        bird = new Bird();
+        addPipe();
+    }
+    
+    function addPipe(){
+        pipes.push(new pipe());
+    }
+    
+
+    
+    function draw(){;
+        background(0, map(sin(frameCount/50), -1, 1, 0, 100));
+        noStroke();
+        if(frameCount%round(frames)===0){
+            addPipe();
+            frames/=1.004;
+        }
+        for(let i = 0; i < pipes.length; i++){
+            let p = pipes[i];
+            p.update();
+            fill('#688D11');
+            p.show();
+            if(p.x<-pThckness){
+                pipes.splice(i, 1);
+                i--;
+            }
+        }
+        hit();
+        if(dead) fill(255, 0, 0);
+        else fill(0, 255, 0);
+        bird.show();
+        bird.update();
+        pSpeed+=0.001;
+        if(dead && bird.y >= height){
+            noLoop();
+            let score = round(millis()/1000);
+            fill(255, 0, 0);
+            textSize(100);
+            textAlign(CENTER, CENTER);
+            if(score !== 1){
+              text('your score was ' + score + ' seconds!', width/2, 50);
+            } else {
+              text('your score was ' + score + ' seconds!', width/2, 50);
+            }
+        }
+    }
+</script>
+</body>
+</html>
